@@ -1,0 +1,80 @@
+{
+    "name": "wire-bridge",
+    "version": "0.1.0",
+    "description": "Framework-independent bridge that shares one mounted Livewire component's state with any frontend renderer. Preact and Solid adapters included.",
+    "type": "module",
+    "license": "MIT",
+    "sideEffects": false,
+    "files": [
+        "src",
+        "dist/types",
+        "README.md",
+        "LICENSE"
+    ],
+    "exports": {
+        ".": {
+            "types": "./dist/types/index.d.ts",
+            "default": "./src/index.js"
+        },
+        "./json": {
+            "types": "./dist/types/json.d.ts",
+            "default": "./src/json.js"
+        },
+        "./livewire": {
+            "types": "./dist/types/livewire.d.ts",
+            "default": "./src/livewire.js"
+        },
+        "./preact": {
+            "types": "./dist/types/preact.d.ts",
+            "default": "./src/preact.js"
+        },
+        "./solid": {
+            "types": "./dist/types/solid.d.ts",
+            "default": "./src/solid.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "scripts": {
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "typecheck": "tsc -p tsconfig.json --noEmit",
+        "types": "tsc -p tsconfig.json",
+        "build": "npm run types",
+        "check": "npm run typecheck && npm test",
+        "publint": "publint",
+        "attw": "attw --pack .",
+        "release": "npm run check && npm run build && npm publish"
+    },
+    "peerDependencies": {
+        "preact": ">=10",
+        "solid-js": ">=1.7"
+    },
+    "peerDependenciesMeta": {
+        "preact": {
+            "optional": true
+        },
+        "solid-js": {
+            "optional": true
+        }
+    },
+    "devDependencies": {
+        "@arethetypeswrong/cli": "^0.18.2",
+        "preact": "^10.29.8",
+        "publint": "^0.3.12",
+        "solid-js": "^1.9.15",
+        "typescript": "^5.9.2",
+        "vitest": "^5.0.1"
+    },
+    "keywords": [
+        "livewire",
+        "laravel",
+        "preact",
+        "solid",
+        "bridge",
+        "state",
+        "islands"
+    ],
+    "engines": {
+        "node": ">=18"
+    }
+}
