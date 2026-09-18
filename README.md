@@ -24,6 +24,10 @@ with first-party Preact and Solid adapters.
 The runtime is plain ES modules with JSDoc types. There is no bundler step for the source and
 nothing is installed at runtime.
 
+<img src="docs/demo.gif" alt="Three panels — LIVEWIRE, PREACT and SOLID — editing one shared Livewire state together, with a request counter that stays at 0" width="100%">
+
+*One state, three renderers: every edit above propagates to all panels with zero Livewire requests.*
+
 ---
 
 ## Install
