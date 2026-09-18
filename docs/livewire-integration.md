@@ -6,21 +6,25 @@ the DOM. It owns two objects: the bridge registry and the `wire:frontend` direct
 ## Registration
 
 ```js
-import { createBridgeRegistry, createFrontendDirective } from 'wire-bridge/livewire';
+import {
+  createBridgeRegistry,
+  createFrontendDirective,
+} from "wire-bridge/livewire";
 
-document.addEventListener('livewire:init', () => {
-    const registry = createBridgeRegistry();
+document.addEventListener("livewire:init", () => {
+  const registry = createBridgeRegistry();
 
-    createFrontendDirective({
-        getLivewire: () => window.Livewire,
-        registry,
-        root: 'data',                    // the public property the bridge projects
-        renderers: {                     // fixed, application-owned map
-            preact: { load: () => import('./islands/preact') },
-            solid: { load: () => import('./islands/solid') },
-        },
-        hooks: {},                       // optional lifecycle callbacks
-    }).register();
+  createFrontendDirective({
+    getLivewire: () => window.Livewire,
+    registry,
+    root: "data", // the public property the bridge projects
+    renderers: {
+      // fixed, application-owned map
+      preact: { load: () => import("./islands/preact") },
+      solid: { load: () => import("./islands/solid") },
+    },
+    hooks: {}, // optional lifecycle callbacks
+  }).register();
 });
 ```
 
@@ -60,9 +64,9 @@ so remounting later creates a fresh bridge over the still-current Livewire state
 
   ```js
   const { bridge, release } = registry.acquire({
-      componentId,
-      root: 'data',
-      createBridge: () => createWireBridge(wire, { root: 'data' }),
+    componentId,
+    root: "data",
+    createBridge: () => createWireBridge(wire, { root: "data" }),
   });
 
   // ... later, when your host is removed:
@@ -97,12 +101,12 @@ so remounting later creates a fresh bridge over the still-current Livewire state
 
 All hooks are optional. They are instrumentation, not domain callbacks:
 
-| Hook | Fired |
-| --- | --- |
-| `onMountStarted(name, el)` | after cleanup registration, before `load()` |
-| `onMounted(name, el, bridge)` | after `mount()` returned |
+| Hook                                  | Fired                                                                              |
+| ------------------------------------- | ---------------------------------------------------------------------------------- |
+| `onMountStarted(name, el)`            | after cleanup registration, before `load()`                                        |
+| `onMounted(name, el, bridge)`         | after `mount()` returned                                                           |
 | `onUnmounted(name, el, { didMount })` | whenever cleanup ran; `didMount` tells a destroyed renderer from a cancelled mount |
-| `onError(error, context)` | load/mount/destroy failures |
+| `onError(error, context)`             | load/mount/destroy failures                                                        |
 
 ## Debug state
 

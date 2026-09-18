@@ -1,11 +1,17 @@
 # wire-bridge
 
-<img src="docs/hero.png" alt="Helge riding a bicycle made of crackling live wires through a neon nebula, labelled WIRE-BRIDGE" width="100%">
+[![version](https://img.shields.io/badge/version-0.1.0-blue)](https://www.npmjs.com/package/wire-bridge)
+[![Livewire 4](https://img.shields.io/badge/Livewire-4-EC4899)](https://livewire.laravel.com)
+![ESM only](https://img.shields.io/badge/module-ESM%20only-3178C6)
+![zero runtime dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen)
+[![MIT license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+<img src="docs/hero.webp" alt="Illustration of a developer riding a bicycle made of crackling live wires through a neon nebula, titled WIRE-BRIDGE" width="100%">
 
 One mounted Livewire component can be the single writable state owner for any number of
-frontend renderers. `wire-bridge` is the small, framework-independent adapter layer that
-makes that true: cached immutable snapshots, stable field bindings, explicit commit and PHP
-actions — and official Preact and Solid adapters.
+frontend renderers. `wire-bridge` is the small, framework-independent adapter layer that makes
+that true: cached immutable snapshots, stable field bindings, explicit commit and PHP actions —
+with first-party Preact and Solid adapters.
 
 - **Livewire stays the only writer.** Every published snapshot is re-read from `$wire`; the
   cache is never a second store.
@@ -15,21 +21,45 @@ actions — and official Preact and Solid adapters.
 - **No forks, no private APIs.** It uses the documented Livewire browser API: `$get`, `$set`,
   `$watch`, `$commit`, `$call` and `Livewire.directive(...)`.
 
-The package is plain ES modules with JSDoc types, no build step for the runtime code, and no
-runtime dependencies. Preact and Solid are optional peers resolved only through their subpaths.
+The runtime is plain ES modules with JSDoc types. There is no bundler step for the source and
+nothing is installed at runtime.
+
+---
 
 ## Install
 
 ```bash
 npm install wire-bridge
-# plus whichever adapter(s) you use
-npm install preact        # for wire-bridge/preact
-npm install solid-js      # for wire-bridge/solid
 ```
 
-Compatibility baseline: Livewire 4, whose `$watch(path, callback)` returns an unsubscribe
-function. The bridge refuses to initialize with a visible `WireBridgeCompatibilityError` if
-that contract is missing, instead of reaching into private component fields.
+Add the adapter packages you actually use. They are optional peers, resolved only through the
+subpaths that import them:
+
+```bash
+npm install preact     # for wire-bridge/preact
+npm install solid-js   # for wire-bridge/solid
+```
+
+Requirements:
+
+- **Livewire 4.** The bridge relies on `$watch(path, callback)` returning an unsubscribe
+  function. On a build without that contract, initialization fails with a visible
+  `WireBridgeCompatibilityError` instead of reaching into private component fields.
+- A bundler that understands package `exports` (Vite, Webpack 5, esbuild, Rollup).
+- Node 18+ for the package's own tooling.
+
+## Entry points
+
+| Subpath | Exports | Peer dependency |
+| --- | --- | --- |
+| `wire-bridge` | `createWireBridge`, `DEBUG_STATE`, error classes | none |
+| `wire-bridge/json` | Value/path helpers (`parsePath`, `copyJsonValue`, `structurallyEqual`, …) | none |
+| `wire-bridge/livewire` | `createBridgeRegistry`, `createFrontendDirective` | Livewire 4 (browser global) |
+| `wire-bridge/preact` | `useWireField` | `preact` >= 10 |
+| `wire-bridge/solid` | `createWireField` | `solid-js` >= 1.7 |
+
+The core entry point never touches Livewire, the DOM, or a frontend framework — it only speaks
+to a `$wire`-shaped object and plain JSON values.
 
 ## Quick start
 
@@ -182,21 +212,21 @@ and `wire:navigate` behavior.
 | `npm run publint` / `npm run attw` | Package/export-map hygiene before publishing |
 | `npm run release` | `check` + `build` + `publish` |
 
-## What this package does not include
+## Scope and limitations
 
-The demo application, the PHP fixture (`AMLForm`), the browser acceptance suite, inspectors,
-controls and diagnostics all live in the PoC repository this package was extracted from. The
-package intentionally stays at the state layer: it observes one Livewire component and serves
-snapshots and writes.
-
-Known limitations, carried over from the PoC:
+The package intentionally stays at the state layer. The demo application, the PHP fixture
+(`AMLForm`), the browser acceptance suite, inspectors, controls and diagnostics all live in
+the PoC repository this package was extracted from.
 
 - Livewire 3 is not supported.
 - No SSR/hydration of islands; no automatic dependency tracking for arbitrary property reads.
 - No configurable blur/debounce/live policies; transport policy belongs to the caller.
+- `owners.0.name`-style paths follow the array index, not identity. Dynamic repeater identity
+  management is out of scope.
 - Edits made while a request is in flight follow Livewire's merge behavior. The bridge always
   converges to whatever `$wire` exposes afterward, without extra writebacks or writeback
-  loops, but it does not promise merge ordering. Documented cases: see the PoC's `findings.md`.
+  loops, but it does not promise merge ordering. The measured cases are documented in the
+  PoC's `findings.md`.
 
 ## License
 

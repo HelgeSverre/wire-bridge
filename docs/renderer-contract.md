@@ -11,12 +11,12 @@ and returns a destroy function.
  * @returns {{ destroy: () => void }}
  */
 export function mount(host, bridge, config) {
-    // build your UI inside host, subscribe through the bridge
-    return {
-        destroy() {
-            // unsubscribe, tear down the framework tree, clear the host
-        },
-    };
+  // build your UI inside host, subscribe through the bridge
+  return {
+    destroy() {
+      // unsubscribe, tear down the framework tree, clear the host
+    },
+  };
 }
 ```
 
@@ -38,34 +38,37 @@ export function mount(host, bridge, config) {
 
 ```js
 export function mount(host, bridge) {
-    const name = bridge.field('name');
-    const country = bridge.field('country');
+  const name = bridge.field("name");
+  const country = bridge.field("country");
 
-    const list = document.createElement('dl');
-    host.append(list);
+  const list = document.createElement("dl");
+  host.append(list);
 
-    const render = () => {
-        list.textContent = '';
-        for (const [label, binding] of [['Name', name], ['Country', country]]) {
-            const dt = document.createElement('dt');
-            dt.textContent = label;
-            const dd = document.createElement('dd');
-            dd.textContent = String(binding.getSnapshot() ?? '');
-            list.append(dt, dd);
-        }
-    };
+  const render = () => {
+    list.textContent = "";
+    for (const [label, binding] of [
+      ["Name", name],
+      ["Country", country],
+    ]) {
+      const dt = document.createElement("dt");
+      dt.textContent = label;
+      const dd = document.createElement("dd");
+      dd.textContent = String(binding.getSnapshot() ?? "");
+      list.append(dt, dd);
+    }
+  };
 
-    const unsubscribeName = name.subscribe(render);
-    const unsubscribeCountry = country.subscribe(render);
-    render(); // subscriptions do not fire at subscribe time
+  const unsubscribeName = name.subscribe(render);
+  const unsubscribeCountry = country.subscribe(render);
+  render(); // subscriptions do not fire at subscribe time
 
-    return {
-        destroy() {
-            unsubscribeName();
-            unsubscribeCountry();
-            host.textContent = '';
-        },
-    };
+  return {
+    destroy() {
+      unsubscribeName();
+      unsubscribeCountry();
+      host.textContent = "";
+    },
+  };
 }
 ```
 
