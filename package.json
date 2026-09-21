@@ -1,7 +1,7 @@
 {
     "name": "wire-bridge",
     "version": "0.1.0",
-    "description": "Framework-independent bridge that shares one mounted Livewire component's state with any frontend renderer. Preact and Solid adapters included.",
+    "description": "Framework-independent bridge that shares one mounted Livewire component's state with any frontend renderer. Preact, React, Solid, Svelte and Vue adapters included.",
     "type": "module",
     "license": "MIT",
     "sideEffects": false,
@@ -29,9 +29,21 @@
             "types": "./dist/types/preact.d.ts",
             "default": "./src/preact.js"
         },
+        "./react": {
+            "types": "./dist/types/react.d.ts",
+            "default": "./src/react.js"
+        },
         "./solid": {
             "types": "./dist/types/solid.d.ts",
             "default": "./src/solid.js"
+        },
+        "./svelte": {
+            "types": "./dist/types/svelte.d.ts",
+            "default": "./src/svelte.js"
+        },
+        "./vue": {
+            "types": "./dist/types/vue.d.ts",
+            "default": "./src/vue.js"
         },
         "./package.json": "./package.json"
     },
@@ -48,29 +60,43 @@
     },
     "peerDependencies": {
         "preact": ">=10",
-        "solid-js": ">=1.7"
+        "react": ">=18",
+        "solid-js": ">=1.7",
+        "vue": ">=3.3"
     },
     "peerDependenciesMeta": {
         "preact": {
             "optional": true
         },
+        "react": {
+            "optional": true
+        },
         "solid-js": {
+            "optional": true
+        },
+        "vue": {
             "optional": true
         }
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "^0.18.2",
+        "@types/react": "^19.2.2",
         "preact": "^10.29.8",
         "publint": "^0.3.12",
+        "react": "^19.2.0",
         "solid-js": "^1.9.15",
         "typescript": "^5.9.2",
-        "vitest": "^5.0.1"
+        "vitest": "^5.0.1",
+        "vue": "^3.5.22"
     },
     "keywords": [
         "livewire",
         "laravel",
         "preact",
+        "react",
         "solid",
+        "svelte",
+        "vue",
         "bridge",
         "state",
         "islands"

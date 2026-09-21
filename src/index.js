@@ -9,6 +9,16 @@
  * @module wire-bridge
  */
 
+/**
+ * Re-exported so consumers can name the core types without reaching into the
+ * package's internal file layout.
+ *
+ * @typedef {import('./core.js').WireBridge} WireBridge
+ * @typedef {import('./core.js').FieldBinding} FieldBinding
+ * @typedef {import('./core.js').WireBridgeOptions} WireBridgeOptions
+ * @typedef {import('./core.js').WireLike} WireLike
+ */
+
 export { createWireBridge, DEBUG_STATE } from './core.js';
 
 export {

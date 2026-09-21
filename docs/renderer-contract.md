@@ -77,15 +77,42 @@ export function mount(host, bridge) {
 The official adapters exist only to convert bridge subscriptions into each framework's own
 reactive primitive:
 
-- **Preact** — `useSyncExternalStore(binding.subscribe, binding.getSnapshot)`. The hook closes
-  the read-before-subscribe race for you.
+- **Preact / React** — `useSyncExternalStore(binding.subscribe, binding.getSnapshot)`. The hook
+  closes the read-before-subscribe race for you.
 - **Solid** — `createSignal(binding.getSnapshot())`, then a subscription that re-sets the
   signal, registered with `onCleanup`. Keep the direction explicit: external changes update
   the signal; user input calls `binding.set()`. Never add an effect that writes the signal
   back into Livewire — that creates an echo loop.
+- **Vue** — `shallowRef(binding.getSnapshot())` plus `onScopeDispose(unsubscribe)`, the same
+  shape as Solid. Use `shallowRef`, never `ref()`/`reactive()`: snapshots are deep-frozen, and
+  a deep proxy over them buys nothing and can only surprise you.
+- **Svelte** — the store contract is inverted, so `wireField` wraps it: a Svelte store must
+  call its subscriber immediately, while `binding.subscribe` never fires at subscribe time.
+  The wrapper calls `run(getSnapshot())` first and then delegates.
+
+Frameworks with no adapter file, because the binding is already the right shape:
+
+- **Lit and other custom elements** — a `ReactiveController` whose `hostConnected()` subscribes
+  and calls `this.host.requestUpdate()`, and whose `hostDisconnected()` unsubscribes. Stencil
+  and every other custom-element compiler emit the same lifecycle callbacks, so the same six
+  lines apply.
+- **Alpine** — `Alpine.data(...)` with `init()` subscribing and `destroy()` unsubscribing.
 
 Bridge and field methods are stable closures without a `this` receiver, so they can be passed
 directly to hooks and event handlers.
+
+## What is deliberately not an adapter
+
+- **Next, Remix, Waku and other React meta-frameworks** need no adapter of their own. Their
+  client layer is plain React, so `'use client'` plus `wire-bridge/react` is the whole
+  integration. Their server halves own the route and cannot live inside a Livewire island.
+- **Datastar** is not a fit, and the reason is structural rather than a missing adapter.
+  Datastar has no external JavaScript signal API by design: state lives in `data-*` attributes,
+  moves via custom events, and is driven from the server over SSE. Livewire is already that
+  server, so a Datastar adapter would put two server-driven state owners in charge of one form.
+  Interop is possible as an *event bridge* — dispatch a `CustomEvent` that a
+  `data-on:…__window` handler reads, and expose a global function for Datastar expressions to
+  call — but that is message passing, not a shared store, and should not be presented as one.
 
 ## Paths and identity
 

@@ -11,7 +11,7 @@
 One mounted Livewire component can be the single writable state owner for any number of
 frontend renderers. `wire-bridge` is the small, framework-independent adapter layer that makes
 that true: cached immutable snapshots, stable field bindings, explicit commit and PHP actions —
-with first-party Preact and Solid adapters.
+with first-party Preact, React, Solid, Svelte and Vue adapters.
 
 - **Livewire stays the only writer.** Every published snapshot is re-read from `$wire`; the
   cache is never a second store.
@@ -41,8 +41,13 @@ subpaths that import them:
 
 ```bash
 npm install preact     # for wire-bridge/preact
+npm install react      # for wire-bridge/react
 npm install solid-js   # for wire-bridge/solid
+npm install vue        # for wire-bridge/vue
 ```
+
+`wire-bridge/svelte` needs no install: a Svelte store is duck-typed, so the adapter imports
+nothing from Svelte.
 
 Requirements:
 
@@ -60,7 +65,10 @@ Requirements:
 | `wire-bridge/json` | Value/path helpers (`parsePath`, `copyJsonValue`, `structurallyEqual`, …) | none |
 | `wire-bridge/livewire` | `createBridgeRegistry`, `createFrontendDirective` | Livewire 4 (browser global) |
 | `wire-bridge/preact` | `useWireField` | `preact` >= 10 |
+| `wire-bridge/react` | `useWireField` | `react` >= 18 |
 | `wire-bridge/solid` | `createWireField` | `solid-js` >= 1.7 |
+| `wire-bridge/svelte` | `wireField` | none |
+| `wire-bridge/vue` | `useWireField` | `vue` >= 3.3 |
 
 The core entry point never touches Livewire, the DOM, or a frontend framework — it only speaks
 to a `$wire`-shaped object and plain JSON values.
@@ -203,7 +211,7 @@ See [`docs/renderer-contract.md`](docs/renderer-contract.md) for a plain-JavaScr
 and [`docs/livewire-integration.md`](docs/livewire-integration.md) for leases, DOM ownership
 and `wire:navigate` behavior.
 
-## Scripts
+## Scripts - todo make this just a code sippet with shell syntax 
 
 | Script | What it does |
 | --- | --- |
