@@ -129,6 +129,67 @@ function NameField(props) {
 }
 ```
 
+`wire-bridge/react` is identical to the Preact example above, and is also all a
+Next, Remix or Waku client component needs.
+
+```vue
+<!-- Vue (inside setup) -->
+<script setup>
+import { useWireField } from 'wire-bridge/vue';
+
+const props = defineProps({ bridge: { type: Object, required: true } });
+
+// shallowRef, because snapshots are deep-frozen.
+const [name, setName] = useWireField(props.bridge, 'name');
+</script>
+
+<template>
+    <input :value="name ?? ''" @input="setName($event.currentTarget.value)" />
+</template>
+```
+
+```svelte
+<!-- Svelte: a plain store, so `$name` auto-subscribes and auto-unsubscribes -->
+<script>
+    import { wireField } from 'wire-bridge/svelte';
+
+    let { bridge } = $props();
+
+    const name = wireField(bridge, 'name');
+</script>
+
+<input value={$name ?? ''} oninput={(event) => name.set(event.currentTarget.value)} />
+```
+
+Frameworks without an adapter consume the binding directly. A Lit
+`ReactiveController` — which is also the shape Stencil and other custom-element
+compilers need — is the whole integration:
+
+```js
+class WireField {
+    constructor(host, bridge, path) {
+        this.host = host;
+        this.binding = bridge.field(path);
+        this.value = this.binding.getSnapshot();
+        host.addController(this);
+    }
+
+    hostConnected() {
+        const sync = () => {
+            this.value = this.binding.getSnapshot();
+            this.host.requestUpdate();
+        };
+
+        this.unsubscribe = this.binding.subscribe(sync);
+        sync(); // subscriptions do not fire at subscribe time
+    }
+
+    hostDisconnected() {
+        this.unsubscribe?.();
+    }
+}
+```
+
 Or use the core directly, framework-free:
 
 ```js
