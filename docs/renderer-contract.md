@@ -1,7 +1,7 @@
 # Renderer contract
 
 A renderer is a lazily loaded ES module that mounts a frontend view into a `wire:ignore` host
-and returns a destroy function.
+and returns an object with a `destroy()` method (optional if there is nothing to tear down).
 
 ```js
 /**
@@ -20,19 +20,21 @@ export function mount(host, bridge, config) {
 }
 ```
 
+`config.mode` is the host's `data-wire-mode` attribute, or `'full'` when unset.
+
 ## Requirements
 
 1. **Stay inside the host you were given.** The host is a `wire:ignore` element; do not
    reach outside it and do not mutate ancestors. Livewire's morph owns everything else.
 2. **Read only through the bridge.** `bridge.getSnapshot()` and `binding.getSnapshot()` are
-   pure cache reads; do not clone, register watchers, or fetch inside them.
+   pure cache reads; call them freely during render.
 3. **Write only through the bridge.** `binding.set(value)` is always deferred
    (`$set(path, value, false)`). Commit and PHP actions are explicit.
 4. **Treat snapshots as immutable.** They are deep-frozen. For object edits, construct a new
    value and `set()` it; never mutate a snapshot in place.
 5. **Make `destroy()` idempotent and complete.** Stop every subscription and cancel every
-   scheduled render. `destroy()` may be called immediately after `mount()` if the host was
-   removed during the import.
+   scheduled render. `destroy()` may be called immediately after `mount()` returns if mounting
+   synchronously removed the host. A host removed during the import is never mounted.
 
 ## Plain-JavaScript example
 
@@ -93,9 +95,7 @@ reactive primitive:
 Frameworks with no adapter file, because the binding is already the right shape:
 
 - **Lit and other custom elements** — a `ReactiveController` whose `hostConnected()` subscribes
-  and calls `this.host.requestUpdate()`, and whose `hostDisconnected()` unsubscribes. Stencil
-  and every other custom-element compiler emit the same lifecycle callbacks, so the same six
-  lines apply.
+  and calls `this.host.requestUpdate()`, and whose `hostDisconnected()` unsubscribes.
 - **Alpine** — `Alpine.data(...)` with `init()` subscribing and `destroy()` unsubscribing.
 
 Bridge and field methods are stable closures without a `this` receiver, so they can be passed
@@ -103,16 +103,9 @@ directly to hooks and event handlers.
 
 ## What is deliberately not an adapter
 
-- **Next, Remix, Waku and other React meta-frameworks** need no adapter of their own. Their
-  client layer is plain React, so `'use client'` plus `wire-bridge/react` is the whole
-  integration. Their server halves own the route and cannot live inside a Livewire island.
-- **Datastar** is not a fit, and the reason is structural rather than a missing adapter.
-  Datastar has no external JavaScript signal API by design: state lives in `data-*` attributes,
-  moves via custom events, and is driven from the server over SSE. Livewire is already that
-  server, so a Datastar adapter would put two server-driven state owners in charge of one form.
-  Interop is possible as an *event bridge* — dispatch a `CustomEvent` that a
-  `data-on:…__window` handler reads, and expose a global function for Datastar expressions to
-  call — but that is message passing, not a shared store, and should not be presented as one.
+- **Datastar** is not a fit. It has no external JavaScript signal API and is itself
+  server-driven, so it would compete with Livewire for ownership of the form. A `CustomEvent`
+  bridge is possible, but that is message passing, not shared state.
 
 ## Paths and identity
 
@@ -120,5 +113,5 @@ directly to hooks and event handlers.
 - `field('owners.0.name')` follows the array index after reordering, not the owner's
   identity. Dynamic repeater identity management is out of scope — render stable `owner.id`
   keys and rebuild rows when the array is replaced.
-- Writes to a missing descendant path throw; add/remove/reorder by replacing the containing
-  object or array.
+- `set()` on a path that does not currently exist throws `WireBridgeValueError`; add, remove
+  or reorder by replacing the containing object or array.

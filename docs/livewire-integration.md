@@ -17,7 +17,7 @@ document.addEventListener("livewire:init", () => {
   createFrontendDirective({
     getLivewire: () => window.Livewire,
     registry,
-    root: "data", // the public property the bridge projects
+    root: "data", // public property the bridge projects (default "data")
     renderers: {
       // fixed, application-owned map
       preact: { load: () => import("./islands/preact") },
@@ -33,9 +33,10 @@ Rules that keep this reliable:
 - **Register on `livewire:init`.** That event fires inside `Livewire.start()` before any
   component initializes, so the directive sees every host exactly once. `getLivewire` is a
   getter because script ordering between your bundle and the Livewire script tag is not fixed.
-- **Register once per page load.** Livewire remembers directive names, and the directive
-  itself refuses to register twice. With `wire:navigate`, the page is not re-evaluated, so
-  register at module scope or behind an idempotence guard — not per navigation.
+- **Register once per page load.** Livewire remembers directive names. `register()` is a
+  no-op on a second call for the same directive object, and throws if `getLivewire()` returns
+  no Livewire. With `wire:navigate` the page isn't re-evaluated, so add the `livewire:init`
+  listener at module scope, never per navigation.
 - **The renderer map is closed.** Host attributes choose a key in the map. They can never
   request arbitrary URLs or modules.
 
@@ -60,7 +61,8 @@ so remounting later creates a fresh bridge over the still-current Livewire state
 - A bridge is created by the first host that needs it and disposed when the **last** lease
   is released.
 - If your own code (an inspector, a debug panel, a plain-JS observer) uses a shared bridge,
-  give it its own lease:
+  give it its own lease. Use the same `componentId` (`$wire.$id`) and `root` as the
+  directive, or you get a separate bridge:
 
   ```js
   const { bridge, release } = registry.acquire({
@@ -104,11 +106,13 @@ All hooks are optional. They are instrumentation, not domain callbacks:
 | Hook                                  | Fired                                                                              |
 | ------------------------------------- | ---------------------------------------------------------------------------------- |
 | `onMountStarted(name, el)`            | after cleanup registration, before `load()`                                        |
-| `onMounted(name, el, bridge)`         | after `mount()` returned                                                           |
+| `onMounted(name, el, bridge)`         | after `mount()` returned; not called if `mount()` synchronously removed its host   |
 | `onUnmounted(name, el, { didMount })` | whenever cleanup ran; `didMount` tells a destroyed renderer from a cancelled mount |
-| `onError(error, context)`             | load/mount/destroy failures                                                        |
+| `onError(error, context)`             | unknown renderer or missing `$wire` (`{ el }`); load/mount failures (`{ el, renderer, phase: 'mount' }`, then cleanup); destroy failures (`phase: 'destroy'`). Defaults to `console.error` |
 
 ## Debug state
 
-`bridge[DEBUG_STATE]()` returns revision, watcher/subscriber counts and disposal state.
+`bridge[DEBUG_STATE]()` (with `DEBUG_STATE` imported from `wire-bridge`) returns `id`, `root`,
+`revision`, `watcherActive`, `fieldCount`, `fieldSubscribers`, `rootSubscribers` and
+`disposed`.
 `DEBUG_STATE` is exported for instrumentation and is not part of the stable contract.

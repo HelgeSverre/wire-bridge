@@ -10,19 +10,15 @@
 
 <img src="https://raw.githubusercontent.com/HelgeSverre/wire-bridge/main/docs/hero.webp" alt="Illustration of a developer riding a bicycle made of crackling live wires through a neon nebula, titled WIRE-BRIDGE" width="100%">
 
-Frontend islands read and edit the state of one mounted Livewire 4 component through cached
-immutable snapshots, stable field bindings, and explicit commit and PHP actions. First-party
-adapters ship for Preact, React, Solid, Svelte and Vue; Lit and Alpine use the plain binding.
+Put React, Vue, Svelte or other framework components on a Livewire page and let them edit
+the same component state as your Blade inputs. Livewire stays the owner: islands read a
+cached copy of the `$wire` state and write back through `$wire.$set`, so typing in a React
+input updates the Vue and Blade inputs without a request. Nothing reaches PHP until you call
+`commit()` or `call()`.
 
-- **Livewire stays the only writer.** Every published snapshot is re-read from `$wire`; the
-  cache is never a second store.
-- **Local edits are free.** Typing, toggling and nested object edits propagate between
-  renderers with zero HTTP requests.
-- **HTTP is explicit.** `commit()` and `call()` are the only paths that talk to PHP.
-- **No forks, no private APIs.** It uses the documented Livewire browser API: `$get`, `$set`,
-  `$watch`, `$commit`, `$call` and `Livewire.directive(...)`.
-
-The runtime is plain ES modules with JSDoc-generated `.d.ts` types and no runtime
+Adapters ship for Preact, React, Solid, Svelte and Vue; Lit and Alpine use the plain binding.
+It only uses Livewire's public browser API (`$get`, `$set`, `$watch`, `$commit`, `$call`,
+`Livewire.directive`). Plain ES modules with TypeScript declarations and no runtime
 dependencies.
 
 <img src="https://raw.githubusercontent.com/HelgeSverre/wire-bridge/main/docs/demo.gif" alt="Three panels — LIVEWIRE, PREACT and SOLID — editing one shared Livewire state together, with a request counter that stays at 0" width="100%">
@@ -58,7 +54,9 @@ Requirements:
 
 - **Livewire 4.** The bridge relies on `$watch(path, callback)` returning an unsubscribe
   function. On a build without that contract, initialization fails with a visible
-  `WireBridgeCompatibilityError` instead of reaching into private component fields.
+  `WireBridgeCompatibilityError` instead of reaching into private component fields. Under
+  `wire:frontend` this error is thrown from the directive callback, not passed to
+  `hooks.onError`.
 - A bundler that understands package `exports` (Vite, Webpack 5, esbuild, Rollup).
 
 ## Entry points
@@ -66,7 +64,7 @@ Requirements:
 | Subpath | Exports | Peer dependency |
 | --- | --- | --- |
 | `wire-bridge` | `createWireBridge`, `DEBUG_STATE`, error classes, JSON helpers | none |
-| `wire-bridge/json` | Value/path helpers (`parsePath`, `copyJsonValue`, `structurallyEqual`, …) | none |
+| `wire-bridge/json` | Error classes and value/path helpers (`parsePath`, `copyJsonValue`, `structurallyEqual`, …) | none |
 | `wire-bridge/livewire` | `createBridgeRegistry`, `createFrontendDirective` | Livewire 4 (browser global) |
 | `wire-bridge/preact` | `useWireField` | `preact` >= 10 |
 | `wire-bridge/react` | `useWireField` | `react` >= 18 |
@@ -142,7 +140,7 @@ import { useWireField } from 'wire-bridge/vue';
 
 const props = defineProps({ bridge: { type: Object, required: true } });
 
-// shallowRef, because snapshots are deep-frozen.
+// `name` is a shallowRef (snapshots are deep-frozen); the template unwraps it.
 const [name, setName] = useWireField(props.bridge, 'name');
 </script>
 
@@ -216,7 +214,7 @@ bridge.dispose();
 
 | Member | Contract |
 | --- | --- |
-| `id` | Livewire component ID, read-only |
+| `id` | `$wire.$id`, or `null` if absent |
 | `root` | Root property path, fixed for the bridge lifetime |
 | `wire` | The original `$wire` object, returned unchanged as an escape hatch |
 | `getSnapshot()` | Cached immutable snapshot of the root |
@@ -233,17 +231,20 @@ bridge.dispose();
 | `path` | Relative path such as `address.city` |
 | `getSnapshot()` | Cached immutable value; referentially stable until this field changes |
 | `subscribe(listener)` | Listener takes no arguments and re-reads the snapshot |
-| `set(nextValue)` | `$wire.$set(absolutePath, value, false)`; never makes a request itself |
+| `set(nextValue)` | `$wire.$set(absolutePath, copy, false)`; never makes a request. Invalid values, missing paths and disposal throw synchronously; a failing `$set` rejects |
 
 `field('')` selects the whole root and can replace it. `field('owners.0.name')` follows the
 array index after reordering, not the owner's identity — render stable `owner.id` keys.
 
 ### Path and value rules
 
-- Dot-separated property names and numeric array indices only; no bracket expressions.
+- Dot-separated segments only: identifier-style property names (`[A-Za-z_$][A-Za-z0-9_$]*`)
+  or numeric indices without leading zeros. No bracket expressions; keys such as
+  `first-name` cannot be addressed.
 - `__proto__`, `constructor` and `prototype` segments are rejected, as are malformed segments.
 - A disappeared path reads as `undefined`; `undefined` is not an allowed stored value.
-- Writes to missing descendant paths are rejected — replace the containing object or array.
+- `set()` on a path that does not currently exist throws `WireBridgeValueError` — replace the
+  containing object or array instead.
 - Accepted values: `null`, booleans, strings, finite numbers, arrays and plain string-keyed
   objects, recursively. Functions, symbols, BigInt, dates/class instances, cycles, `undefined`
   members and non-finite numbers are rejected with descriptive errors instead of being lost
@@ -276,10 +277,10 @@ and `wire:navigate` behavior.
 
 ## Development
 
-Requires Node 22.12+ (Vitest 5).
+Development needs Node ^22.12, ^24 or >=26 (Vitest 5).
 
 ```bash
-npm test             # core bridge contract tests (node, no DOM)
+npm test             # contract tests for core, directive and entry points (Node, no DOM)
 npm run typecheck    # tsc --noEmit over the JSDoc-typed source
 npm run build        # emit .d.ts declarations into dist/types
 npm run check        # typecheck + test
@@ -301,8 +302,7 @@ Playwright acceptance suite, inspectors and diagnostics live in
   management is out of scope.
 - Edits made while a request is in flight follow Livewire's merge behavior. The bridge always
   converges to whatever `$wire` exposes afterward, without extra writebacks or writeback
-  loops, but it does not promise merge ordering. The measured cases are documented in
-  [`findings.md`](https://github.com/HelgeSverre/wire-bridge-example/blob/main/findings.md).
+  loops, but it does not promise merge ordering.
 
 ## License
 
