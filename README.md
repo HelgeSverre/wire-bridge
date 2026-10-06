@@ -1,5 +1,7 @@
 # wire-bridge
 
+**Livewire state for React, Vue, Svelte, Solid, Preact, Lit and Alpine islands.**
+
 [![npm](https://img.shields.io/npm/v/wire-bridge)](https://www.npmjs.com/package/wire-bridge)
 [![Livewire 4](https://img.shields.io/badge/Livewire-4-EC4899)](https://livewire.laravel.com)
 ![ESM only](https://img.shields.io/badge/module-ESM%20only-3178C6)
@@ -8,10 +10,9 @@
 
 <img src="https://raw.githubusercontent.com/HelgeSverre/wire-bridge/main/docs/hero.webp" alt="Illustration of a developer riding a bicycle made of crackling live wires through a neon nebula, titled WIRE-BRIDGE" width="100%">
 
-Let React, Vue, Svelte, Solid, Preact, Lit or Alpine islands read and edit the state of one
-mounted Livewire 4 component, through cached immutable snapshots, stable field bindings, and
-explicit commit and PHP actions. First-party adapters ship for Preact, React, Solid, Svelte and
-Vue.
+Frontend islands read and edit the state of one mounted Livewire 4 component through cached
+immutable snapshots, stable field bindings, and explicit commit and PHP actions. First-party
+adapters ship for Preact, React, Solid, Svelte and Vue; Lit and Alpine use the plain binding.
 
 - **Livewire stays the only writer.** Every published snapshot is re-read from `$wire`; the
   cache is never a second store.
