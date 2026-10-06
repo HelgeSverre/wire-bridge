@@ -4,8 +4,6 @@
 
 [![npm](https://img.shields.io/npm/v/wire-bridge)](https://www.npmjs.com/package/wire-bridge)
 [![Livewire 4](https://img.shields.io/badge/Livewire-4-EC4899)](https://livewire.laravel.com)
-![ESM only](https://img.shields.io/badge/module-ESM%20only-3178C6)
-![zero runtime dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](https://github.com/HelgeSverre/wire-bridge/blob/main/LICENSE)
 
 <img src="https://raw.githubusercontent.com/HelgeSverre/wire-bridge/main/docs/hero.webp" alt="Illustration of a developer riding a bicycle made of crackling live wires through a neon nebula, titled WIRE-BRIDGE" width="100%">
