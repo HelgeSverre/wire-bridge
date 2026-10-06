@@ -20,13 +20,14 @@ It only uses Livewire's public browser API (`$get`, `$set`, `$watch`, `$commit`,
 `Livewire.directive`). Plain ES modules with TypeScript declarations and no runtime
 dependencies.
 
-<img src="https://raw.githubusercontent.com/HelgeSverre/wire-bridge/main/docs/demo.gif" alt="Blade, Preact and Solid panels editing one shared Livewire state with zero requests; a postal code is typed, then Commit sends one request and PHP fills in the city, which appears in every panel" width="100%">
+<img src="https://raw.githubusercontent.com/HelgeSverre/wire-bridge/main/docs/demo.gif" alt="Order builder: React line items, Vue totals, Svelte delivery and coupon, a Lit badge and Alpine notes edit one Livewire component's state with zero requests; Apply sends one request and PHP's discount appears everywhere; Place order sends a second and the order number appears in the Lit badge" width="100%">
 
-*Edits propagate between renderers with zero requests. **Commit** sends them to PHP in one request; PHP fills in the city from the postal code, and that flows back into every renderer.*
+*One Livewire component, five frameworks plus Blade. Edits update every island with zero
+requests. **Apply** and **Place order** each send one request; PHP's discount and order
+number flow back into every island.*
 
 To try it locally, clone [wire-bridge-example](https://github.com/HelgeSverre/wire-bridge-example):
-a Laravel app with Blade, Preact, React, Solid, Svelte, Vue, Lit and Alpine panels on one
-component.
+the order builder above, plus a renderer matrix with the same form in all eight renderers.
 
 ---
 
