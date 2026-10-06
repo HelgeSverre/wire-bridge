@@ -204,11 +204,22 @@ export function createFrontendDirective({ getLivewire, registry, renderers, root
                     };
 
                     const mounted = module.mount(el, lease.bridge, config);
-
-                    state.didMount = true;
-                    state.destroy = mounted !== null && typeof mounted?.destroy === 'function'
+                    const destroy = mounted !== null && typeof mounted?.destroy === 'function'
                         ? mounted.destroy.bind(mounted)
                         : null;
+
+                    // Mounting can synchronously remove its own host. Cleanup
+                    // has already released the lease in that case, so destroy
+                    // the renderer immediately instead of storing it in dead
+                    // host state.
+                    if (state.cleaned) {
+                        destroy?.();
+
+                        return;
+                    }
+
+                    state.didMount = true;
+                    state.destroy = destroy;
 
                     if (typeof hooks.onMounted === 'function') {
                         hooks.onMounted(name, el, lease.bridge);

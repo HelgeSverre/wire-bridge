@@ -473,7 +473,13 @@ export function createWireBridge(wire, options) {
 
     watcherDisposer = /** @type {() => void} */ (disposer);
 
-    captureInitialSnapshot();
+    try {
+        captureInitialSnapshot();
+    } catch (error) {
+        dispose();
+
+        throw error;
+    }
 
     /** @type {WireBridge} */
     const bridge = {

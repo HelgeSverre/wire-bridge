@@ -218,6 +218,20 @@ describe('createWireBridge', () => {
         expect(fake.watcherCount()).toBe(0);
     });
 
+    it('disposes the root watcher when initial snapshot capture fails', () => {
+        const disposeWatcher = vi.fn();
+        const wire = {
+            $get: () => undefined,
+            $set: () => {},
+            $watch: () => disposeWatcher,
+            $commit: () => {},
+            $call: () => {},
+        };
+
+        expect(() => createWireBridge(wire, { root: 'data' })).toThrow(WireBridgeValueError);
+        expect(disposeWatcher).toHaveBeenCalledOnce();
+    });
+
     it('throws a visible compatibility error when $watch returns no disposer', () => {
         const fake = createFakeWire({ watchReturnsDisposer: false });
 
@@ -507,6 +521,17 @@ describe('snapshot and notification semantics', () => {
         await tick();
 
         expect(bridge.field('name').getSnapshot()).toBe('Replaced');
+    });
+
+    it('rejects invalid server-side values before structural comparison', () => {
+        const fake = createFakeWire({ data: {} });
+        createWireBridge(fake.wire, { root: 'data' });
+
+        // Date and an empty plain object both have no enumerable keys, but a
+        // Date is not a JSON-compatible bridge snapshot.
+        fake.mutate('data', new Date());
+
+        expect(() => fake.flush()).toThrow(WireBridgeValueError);
     });
 
     it('keeps existing subscriptions working after root replacement', async () => {

@@ -342,6 +342,10 @@ export function structurallyEqual(left, right) {
     }
 
     if (typeof left === 'object') {
+        if (!isPlainObject(left) || !isPlainObject(right)) {
+            return false;
+        }
+
         const leftKeys = Object.keys(left);
         const rightKeys = Object.keys(/** @type {object} */ (right));
 
