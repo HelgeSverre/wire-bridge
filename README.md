@@ -1,4 +1,4 @@
-# wire-bridge
+# Wire Bridge
 
 **Livewire state for React, Vue, Svelte, Solid, Preact, Lit and Alpine islands.**
 
