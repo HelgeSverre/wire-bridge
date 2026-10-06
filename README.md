@@ -303,7 +303,3 @@ Playwright acceptance suite, inspectors and diagnostics live in
 - Edits made while a request is in flight follow Livewire's merge behavior. The bridge always
   converges to whatever `$wire` exposes afterward, without extra writebacks or writeback
   loops, but it does not promise merge ordering.
-
-## License
-
-MIT
