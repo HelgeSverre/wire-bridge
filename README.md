@@ -1,17 +1,17 @@
 # wire-bridge
 
-[![version](https://img.shields.io/badge/version-0.1.0-blue)](https://www.npmjs.com/package/wire-bridge)
+[![npm](https://img.shields.io/npm/v/wire-bridge)](https://www.npmjs.com/package/wire-bridge)
 [![Livewire 4](https://img.shields.io/badge/Livewire-4-EC4899)](https://livewire.laravel.com)
 ![ESM only](https://img.shields.io/badge/module-ESM%20only-3178C6)
 ![zero runtime dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen)
-[![MIT license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![MIT license](https://img.shields.io/badge/license-MIT-blue)](https://github.com/HelgeSverre/wire-bridge/blob/main/LICENSE)
 
-<img src="docs/hero.webp" alt="Illustration of a developer riding a bicycle made of crackling live wires through a neon nebula, titled WIRE-BRIDGE" width="100%">
+<img src="https://raw.githubusercontent.com/HelgeSverre/wire-bridge/main/docs/hero.webp" alt="Illustration of a developer riding a bicycle made of crackling live wires through a neon nebula, titled WIRE-BRIDGE" width="100%">
 
-One mounted Livewire component can be the single writable state owner for any number of
-frontend renderers. `wire-bridge` is the small, framework-independent adapter layer that makes
-that true: cached immutable snapshots, stable field bindings, explicit commit and PHP actions —
-with first-party Preact, React, Solid, Svelte and Vue adapters.
+Let React, Vue, Svelte, Solid, Preact, Lit or Alpine islands read and edit the state of one
+mounted Livewire 4 component, through cached immutable snapshots, stable field bindings, and
+explicit commit and PHP actions. First-party adapters ship for Preact, React, Solid, Svelte and
+Vue.
 
 - **Livewire stays the only writer.** Every published snapshot is re-read from `$wire`; the
   cache is never a second store.
@@ -21,12 +21,16 @@ with first-party Preact, React, Solid, Svelte and Vue adapters.
 - **No forks, no private APIs.** It uses the documented Livewire browser API: `$get`, `$set`,
   `$watch`, `$commit`, `$call` and `Livewire.directive(...)`.
 
-The runtime is plain ES modules with JSDoc types. There is no bundler step for the source and
-nothing is installed at runtime.
+The runtime is plain ES modules with JSDoc-generated `.d.ts` types and no runtime
+dependencies.
 
-<img src="docs/demo.gif" alt="Three panels — LIVEWIRE, PREACT and SOLID — editing one shared Livewire state together, with a request counter that stays at 0" width="100%">
+<img src="https://raw.githubusercontent.com/HelgeSverre/wire-bridge/main/docs/demo.gif" alt="Three panels — LIVEWIRE, PREACT and SOLID — editing one shared Livewire state together, with a request counter that stays at 0" width="100%">
 
-*One state, three renderers: every edit above propagates to all panels with zero Livewire requests.*
+*One state, three renderers: every edit propagates to all panels with zero Livewire requests.*
+
+To try it locally, clone [wire-bridge-example](https://github.com/HelgeSverre/wire-bridge-example):
+a Laravel app with Blade, Preact, React, Solid, Svelte, Vue, Lit and Alpine panels on one
+component.
 
 ---
 
@@ -55,13 +59,12 @@ Requirements:
   function. On a build without that contract, initialization fails with a visible
   `WireBridgeCompatibilityError` instead of reaching into private component fields.
 - A bundler that understands package `exports` (Vite, Webpack 5, esbuild, Rollup).
-- Node 18+ for the package's own tooling.
 
 ## Entry points
 
 | Subpath | Exports | Peer dependency |
 | --- | --- | --- |
-| `wire-bridge` | `createWireBridge`, `DEBUG_STATE`, error classes | none |
+| `wire-bridge` | `createWireBridge`, `DEBUG_STATE`, error classes, JSON helpers | none |
 | `wire-bridge/json` | Value/path helpers (`parsePath`, `copyJsonValue`, `structurallyEqual`, …) | none |
 | `wire-bridge/livewire` | `createBridgeRegistry`, `createFrontendDirective` | Livewire 4 (browser global) |
 | `wire-bridge/preact` | `useWireField` | `preact` >= 10 |
@@ -129,8 +132,7 @@ function NameField(props) {
 }
 ```
 
-`wire-bridge/react` is identical to the Preact example above, and is also all a
-Next, Remix or Waku client component needs.
+`wire-bridge/react` has the same `useWireField` signature as the Preact adapter.
 
 ```vue
 <!-- Vue (inside setup) -->
@@ -161,9 +163,8 @@ const [name, setName] = useWireField(props.bridge, 'name');
 <input value={$name ?? ''} oninput={(event) => name.set(event.currentTarget.value)} />
 ```
 
-Frameworks without an adapter consume the binding directly. A Lit
-`ReactiveController` — which is also the shape Stencil and other custom-element
-compilers need — is the whole integration:
+Frameworks without an adapter consume the binding directly. For Lit, a
+`ReactiveController` is the whole integration:
 
 ```js
 class WireField {
@@ -268,28 +269,29 @@ Rules:
 - On cleanup, stop your subscriptions and destroy your renderer. Every step must be
   idempotent; the directive may clean up before a lazy import resolves.
 
-See [`docs/renderer-contract.md`](docs/renderer-contract.md) for a plain-JavaScript example,
-and [`docs/livewire-integration.md`](docs/livewire-integration.md) for leases, DOM ownership
+See [`docs/renderer-contract.md`](https://github.com/HelgeSverre/wire-bridge/blob/main/docs/renderer-contract.md) for a plain-JavaScript example,
+and [`docs/livewire-integration.md`](https://github.com/HelgeSverre/wire-bridge/blob/main/docs/livewire-integration.md) for leases, DOM ownership
 and `wire:navigate` behavior.
 
-## Scripts - todo make this just a code sippet with shell syntax 
+## Development
 
-| Script | What it does |
-| --- | --- |
-| `npm test` | Core bridge contract tests (node environment, no DOM) |
-| `npm run test:watch` | Vitest in watch mode |
-| `npm run typecheck` | `tsc --noEmit` over the JSDoc-typed source |
-| `npm run types` | Emit `.d.ts` declarations into `dist/types` |
-| `npm run build` | Alias for `types` — the runtime ships as-authored ESM |
-| `npm run check` | `typecheck` + `test`, the pre-push gate |
-| `npm run publint` / `npm run attw` | Package/export-map hygiene before publishing |
-| `npm run release` | `check` + `build` + `publish` |
+Requires Node 22.12+ (Vitest 5).
+
+```bash
+npm test             # core bridge contract tests (node, no DOM)
+npm run typecheck    # tsc --noEmit over the JSDoc-typed source
+npm run build        # emit .d.ts declarations into dist/types
+npm run check        # typecheck + test
+npm run publint      # package/export-map lint
+npm run attw         # "are the types wrong" check
+npm run release      # check + build + npm publish
+```
 
 ## Scope and limitations
 
-The package intentionally stays at the state layer. The demo application, the PHP fixture
-(`AMLForm`), the browser acceptance suite, inspectors, controls and diagnostics all live in
-the PoC repository this package was extracted from.
+The package stays at the state layer. The demo app, the PHP fixture (`AMLForm`), the
+Playwright acceptance suite, inspectors and diagnostics live in
+[wire-bridge-example](https://github.com/HelgeSverre/wire-bridge-example).
 
 - Livewire 3 is not supported.
 - No SSR/hydration of islands; no automatic dependency tracking for arbitrary property reads.
@@ -298,8 +300,8 @@ the PoC repository this package was extracted from.
   management is out of scope.
 - Edits made while a request is in flight follow Livewire's merge behavior. The bridge always
   converges to whatever `$wire` exposes afterward, without extra writebacks or writeback
-  loops, but it does not promise merge ordering. The measured cases are documented in the
-  PoC's `findings.md`.
+  loops, but it does not promise merge ordering. The measured cases are documented in
+  [`findings.md`](https://github.com/HelgeSverre/wire-bridge-example/blob/main/findings.md).
 
 ## License
 

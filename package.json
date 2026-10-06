@@ -4,11 +4,20 @@
     "description": "Framework-independent bridge that shares one mounted Livewire component's state with any frontend renderer. Preact, React, Solid, Svelte and Vue adapters included.",
     "type": "module",
     "license": "MIT",
+    "author": "Helge Sverre <helge.sverre@gmail.com>",
+    "homepage": "https://github.com/HelgeSverre/wire-bridge#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/HelgeSverre/wire-bridge.git"
+    },
+    "bugs": {
+        "url": "https://github.com/HelgeSverre/wire-bridge/issues"
+    },
     "sideEffects": false,
     "files": [
         "src",
         "dist/types",
-        "docs",
+        "docs/*.md",
         "README.md",
         "LICENSE"
     ],
