@@ -285,7 +285,16 @@ npm run build        # emit .d.ts declarations into dist/types
 npm run check        # typecheck + test
 npm run publint      # package/export-map lint
 npm run attw         # "are the types wrong" check
-npm run release      # check + build + npm publish
+```
+
+Releases publish from CI. Bump the version, push the tag, and publish a GitHub release for it;
+`.github/workflows/publish.yml` then runs the checks and publishes to npm with provenance
+through trusted publishing:
+
+```bash
+npm version patch                  # or minor / major; commits and tags vX.Y.Z
+git push --follow-tags
+gh release create "v$(node -p "require('./package.json').version")" --generate-notes
 ```
 
 ## Scope and limitations

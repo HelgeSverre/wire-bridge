@@ -64,8 +64,7 @@
         "build": "npm run types",
         "check": "npm run typecheck && npm test",
         "publint": "publint",
-        "attw": "attw --pack . --profile esm-only",
-        "release": "npm run check && npm run build && npm publish"
+        "attw": "attw --pack . --profile esm-only"
     },
     "peerDependencies": {
         "preact": ">=10",
