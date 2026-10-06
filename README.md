@@ -3,6 +3,7 @@
 **Livewire state for React, Vue, Svelte, Solid, Preact, Lit and Alpine islands.**
 
 [![npm](https://img.shields.io/npm/v/wire-bridge)](https://www.npmjs.com/package/wire-bridge)
+[![CI](https://github.com/HelgeSverre/wire-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/HelgeSverre/wire-bridge/actions/workflows/ci.yml)
 [![Livewire 4](https://img.shields.io/badge/Livewire-4-EC4899)](https://livewire.laravel.com)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](https://github.com/HelgeSverre/wire-bridge/blob/main/LICENSE)
 
