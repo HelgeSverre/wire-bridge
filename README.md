@@ -20,9 +20,9 @@ It only uses Livewire's public browser API (`$get`, `$set`, `$watch`, `$commit`,
 `Livewire.directive`). Plain ES modules with TypeScript declarations and no runtime
 dependencies.
 
-<img src="https://raw.githubusercontent.com/HelgeSverre/wire-bridge/main/docs/demo.gif" alt="Three panels — LIVEWIRE, PREACT and SOLID — editing one shared Livewire state together, with a request counter that stays at 0" width="100%">
+<img src="https://raw.githubusercontent.com/HelgeSverre/wire-bridge/main/docs/demo.gif" alt="Blade, Preact and Solid panels editing one shared Livewire state with zero requests; then Commit sends one request and the PHP panel catches up, and a PHP action upper-cases the country in every panel" width="100%">
 
-*One state, three renderers: every edit propagates to all panels with zero Livewire requests.*
+*Edits propagate between renderers with zero requests. **Commit** sends them to PHP in one request, and a PHP action (`normalize`, which upper-cases the country) flows back into every renderer.*
 
 To try it locally, clone [wire-bridge-example](https://github.com/HelgeSverre/wire-bridge-example):
 a Laravel app with Blade, Preact, React, Solid, Svelte, Vue, Lit and Alpine panels on one
